@@ -135,11 +135,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="board.cpp" />
     <ClCompile Include="loadMultiple.c" />
     <ClCompile Include="object.c" />
+    <ClCompile Include="piece.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="board.h" />
     <ClInclude Include="object.h" />
+    <ClInclude Include="piece.h" />
+    <ClInclude Include="shapes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
