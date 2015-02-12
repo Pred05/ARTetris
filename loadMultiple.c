@@ -54,6 +54,11 @@ static  GLfloat   red[]				= {1.0, 0.0, 0.0, 1.0};
 static  GLfloat   blue[]				= {0.0, 0.0, 1.0, 1.0};
 static  GLfloat   green[]				= {0.0, 1.0, 0.0, 1.0};
 static int translateDown = 300;
+static int translateX = 10;
+static int changement = 0;
+static int changement2= 0;
+static int changement3= 0;
+static int tempsChute = 1000;
 
 
 
@@ -85,6 +90,16 @@ static void   keyEvent( unsigned char key, int x, int y)
     }
 }
 
+
+static void drawTetris()
+{
+	glPushMatrix();
+		glTranslatef(translateX, 0.0, translateDown);
+		glRotatef(rotationPlus,0,0,1.0);
+		glutSolidCube(20);
+	glPopMatrix();
+}
+
 /* main loop */
 static void mainLoop(void)
 {
@@ -96,12 +111,12 @@ static void mainLoop(void)
 
 	areClose=0;
 
-	if(time_c>1000)
+	if(time_c>tempsChute && translateDown>15)
 	{
 		translateDown -= 20;
 		clock_start=GetTickCount();
+		drawTetris();
 	}
-	
 	
 
     /* grab a video frame */
@@ -135,7 +150,6 @@ static void mainLoop(void)
 		k = -1;
 		for( j = 0; j < marker_num; j++ ) {
 	        if( object[i].id == marker_info[j].id) {
-
 				/* you've found a pattern */
 				//printf("Found pattern: %d ",patt_id);
 				glColor3f( 0.0, 1.0, 0.0 );
@@ -176,8 +190,6 @@ static void mainLoop(void)
 		if(dist<200)
 			areClose = 1;
 	}
-
-
 	
 
 	
@@ -238,6 +250,37 @@ static int draw( ObjectData_T *object, int objectnum )
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_LIGHTING);
 
+
+	if(object[2].visible == 0 && changement==1)
+	{
+		translateX+=20;
+		changement=0;
+	}
+	if(object[3].visible == 0 && changement2==1)
+	{
+		translateX-=20;
+		changement2=0;
+	}
+	if(object[1].visible == 0 && translateDown > 15 && changement3==1)
+	{
+		tempsChute=100;
+		translateDown-=20;
+	}
+	if(object[1].visible)
+	{
+		tempsChute=1000;
+		changement3=1;
+	}
+	if(object[2].visible && changement==0)
+	{
+		changement=1;
+	}
+	if(object[3].visible && changement2==0)
+	{
+		changement2=1;
+	}
+	
+
     /* calculate the viewing parameters - gl_para */
     for( i = 0; i < objectnum; i++ ) {
         if( object[i].visible == 0 ) continue;
@@ -253,84 +296,37 @@ static int draw( ObjectData_T *object, int objectnum )
     return(0);
 }
 
-static void drawRobot(int happy,int orientation)
+
+
+
+static void drawFleche(int obj_id)
 {
-	int sizeHead = 30;
-	int sizeBuste = 40;
-	int hauteurJambe = 50;
-	int largeurcuisse = 15;
-	int longueurBras = 60;
-
-
 	glPushMatrix();
-		glRotatef(orientation,0.0,0.0,1.0);
-		glPushMatrix();
-			glPushMatrix();
-				glMaterialfv(GL_FRONT, GL_SPECULAR, green);
-				glMaterialfv(GL_FRONT, GL_AMBIENT, green);
-				glColor3f(1.0F,0.0F,0.0F);
-				glTranslated(0,(largeurcuisse/2),0);
-				glTranslated(0,0,hauteurJambe);
-				glRotatef(180,1.0,0,0);
-				glutSolidCone(largeurcuisse,hauteurJambe,5,5);
-			glPopMatrix();
-		glPopMatrix();
-
-		glPushMatrix();
-			glPushMatrix();
-				glColor3f(0.0F,1.0F,0.0F);
-				glTranslated(0,-largeurcuisse/2,0);
-				glTranslated(0,0,hauteurJambe);
-				glRotatef(180,1.0,0,0);
-				glutSolidCone(largeurcuisse,hauteurJambe,5,5);
-			glPopMatrix();
-		glPopMatrix();
-		
-		glMaterialfv(GL_FRONT, GL_SPECULAR, blue);
-		glMaterialfv(GL_FRONT, GL_AMBIENT, blue);
-		
-
-		glPushMatrix();
-			glTranslated(0,0,hauteurJambe+(sizeBuste/2));
-			glutSolidCube(sizeBuste);
-
-			glMaterialfv(GL_FRONT, GL_SPECULAR, red);
-			glMaterialfv(GL_FRONT, GL_AMBIENT, red);
-			glPushMatrix();
-				glTranslated(0,-sizeBuste/2,0);
-				glRotatef(90,1.0,0,0);
-				if(happy)
-				{
-					glRotatef(-90,0.0,1.0,0);
-				}
-				glutSolidCone(20,longueurBras,5,5);
-			glPopMatrix();
-
-			glPushMatrix();
-				glTranslated(0,sizeBuste/2,0);
-				glRotatef(-90,1.0,0,0);
-				if(happy)
-				{
-					glRotatef(-90,0.0,1.0,0);
-				}
-				glutSolidCone(20,longueurBras,5,5);
-			glPopMatrix();
-	
-
-			glMaterialfv(GL_FRONT, GL_SPECULAR, red);
-			glMaterialfv(GL_FRONT, GL_AMBIENT, red);
-			glTranslated(0,0,sizeHead);
-			glutSolidCube(sizeHead);
-
-			glMaterialfv(GL_FRONT, GL_SPECULAR, blue);
-			glMaterialfv(GL_FRONT, GL_AMBIENT, blue);
-			glTranslated(0,0,sizeHead/2);
-			glutSolidCone(20,60,5,5);
-
-		glPopMatrix();
-
-		
-
+		glColor3f(0.0,1.0,0.0);
+		glTranslatef(0,0,10);	
+		glRectf(-40,40,40,-40);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, green);
+		glMaterialfv(GL_FRONT, GL_AMBIENT, green);
+		glBegin(GL_TRIANGLES);
+			if(obj_id==1)
+			{
+				glVertex3f(-40, 40,1);
+				glVertex3f(40,40,1);
+				glVertex3f(0,-20,1);
+			}
+			if(obj_id==2)
+			{
+				glVertex3f(-40, 40,1);
+				glVertex3f(-40,-40,1);
+				glVertex3f(20,0,1);
+			}
+			else if(obj_id==3)
+			{
+				glVertex3f(40, 40,1);
+				glVertex3f(40,-40,1);
+				glVertex3f(-20,0,1);
+			}
+			glEnd();
 	glPopMatrix();
 }
 
@@ -364,31 +360,17 @@ static int  draw_object( int obj_id, double gl_para[16])
 	
 	if(obj_id == 0  )
 	{	
-		drawRobot(areClose,0);
+		drawTetris();
 	}
-	else {
-		
-		/* draw a cube */
-		glTranslatef( 0.0, 0.0, translateDown);
-		glRotatef(rotationPlus,0,0,1.0);
-		
-		if(areClose)
-		{
-			glutWireCube(60);
-		}
-		else
-		{
-			glutSolidCube(20);
-		}
+	else
+	{	
+		drawFleche(obj_id);
 	}
+
 
 	glLoadIdentity();
 	glMaterialfv(GL_FRONT, GL_SPECULAR, red);
 	glMaterialfv(GL_FRONT, GL_AMBIENT, red);
-	glBegin(GL_LINES);
-		glVertex3f(object[0].trans[0][3],object[0].trans[1][3],object[0].trans[2][3]);
-		glVertex3f(object[1].trans[0][3],object[1].trans[1][3],object[1].trans[2][3]);
-	glEnd();
 
     argDrawMode2D();
 
