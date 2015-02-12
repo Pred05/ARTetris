@@ -51,6 +51,16 @@ Board::Board()
         for(int j = 0; j < BOARD_HEIGHT; ++j)
             area[i][j] = FREE;
 }
+
+void Board::setCurrentPiece(Piece p)
+{
+    currentPiece = p;
+}
+ 
+Piece Board::getCurrentPiece()
+{
+    return currentPiece;
+}
  
 void Board::drawPiece(Piece p)
 {

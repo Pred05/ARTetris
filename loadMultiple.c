@@ -18,6 +18,7 @@
 #include <AR/video.h>
 
 #include "object.h"
+#include "board.h"
 
 #define COLLIDE_DIST 30000.0
 
@@ -59,6 +60,7 @@ static int changement = 0;
 static int changement2= 0;
 static int changement3= 0;
 static int tempsChute = 1000;
+static Board jeu;
 
 
 
