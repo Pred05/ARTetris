@@ -1,14 +1,13 @@
 /* shapes.h */
-#ifndef SHAPES_H
 #define SHAPES_H
  
-const int NB_KINDS = 7; // Le nombre de types de pièces qu'on a
-const int NB_ROTATIONS = 4; // Le nombre de rotations de chaque pièce
-const int SIZE = 4; // La taille de la matrice de chaque rotation
+#define NB_KINDS  7 // Le nombre de types de pièces qu'on a
+#define NB_ROTATIONS  4 // Le nombre de rotations de chaque pièce
+#define SIZEE  4 // La taille de la matrice de chaque rotation
 
 enum { O, I, S, Z, L, J, T };
 
-static int PIECES[NB_KINDS][NB_ROTATIONS][SIZE][SIZE] =
+static int PIECES[NB_KINDS][NB_ROTATIONS][SIZEE][SIZEE] =
 {
     { // O
         {
@@ -220,5 +219,3 @@ static int PIECES[NB_KINDS][NB_ROTATIONS][SIZE][SIZE] =
         }
     }
 };
- 
-#endif

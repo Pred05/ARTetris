@@ -135,10 +135,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="board.cpp" />
+    <ClCompile Include="board.c" />
     <ClCompile Include="loadMultiple.c" />
     <ClCompile Include="object.c" />
-    <ClCompile Include="piece.cpp" />
+    <ClCompile Include="piece.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="board.h" />

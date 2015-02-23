@@ -1,30 +1,43 @@
 /* board.h */
-#ifndef BOARD_H
-#define BOARD_H
  
 #include "piece.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+
+#define BOARD_H
+#define BOARD_HEIGHT 20
+#define BOARD_WIDTH 10
+ 
+#define ORIGIN_X 5
+#define ORIGIN_Y 1
  
 enum  { FREE, FILLED };
  
-const int BOARD_HEIGHT = 20;
-const int BOARD_WIDTH = 10;
  
-const int ORIGIN_X = 0;
-const int ORIGIN_Y = 5;
- 
-class Board
+typedef struct Board {
+	Piece currentPiece;
+    Piece ghostPiece;
+	int area[BOARD_WIDTH][BOARD_HEIGHT];
+} Board;
+
+Board jeu;
+
+/*class Board
 {
 private:
     Piece currentPiece;
     Piece ghostPiece;
  
-    void flood(int i, int j, int px, int py, int k, int o, int value, bool visited[][SIZE]);
-    void flood(int i, int j, int px, int py, int k, int o, bool &flag, bool visited[][SIZE]);
+    void flood(int i, int j, int px, int py, int k, int o, int value, BOOL visited[][SIZEE]);
+    void flood(int i, int j, int px, int py, int k, int o, BOOL &flag, BOOL visited[][SIZEE]);
     void floodFill(int i, int j, int px, int py, int k, int o, int value);
  
 public:
     int area[BOARD_WIDTH][BOARD_HEIGHT];
- 
+
     Board();
  
     void setCurrentPiece(Piece p);
@@ -35,8 +48,8 @@ public:
  
     void newPiece(Piece p);
  
-    bool isCurrentPieceMovable(int x, int y);
-    bool isCurrentPieceRotable(int o);
+    BOOL isCurrentPieceMovable(int x, int y);
+    BOOL isCurrentPieceRotable(int o);
  
     void moveCurrentPieceDown();
     void moveCurrentPieceLeft();
@@ -49,10 +62,40 @@ public:
     int deletePossibleLines();
  
     void dropCurrentPiece();
-    bool isCurrentPieceFallen();
-	bool isGameOver();
+    BOOL isCurrentPieceFallen();
+	BOOL isGameOver();
  
     void clear();
-};
+};*/
+
+
+void flood(int i, int j, int px, int py, int k, int o, int value, BOOL visited[][SIZEE]);
+    void floodB(int i, int j, int px, int py, int k, int o, BOOL *flag, BOOL visited[][SIZEE]);
+    void floodFill(int i, int j, int px, int py, int k, int o, int value);
+	void setCurrentPiece(Piece p);
+    Piece getCurrentPiece();
  
-#endif
+    void drawPiece(Piece p);
+    void clearPiece(Piece p);
+ 
+    void newPiece(Piece p);
+ 
+    BOOL isCurrentPieceMovable(int x, int y);
+    BOOL isCurrentPieceRotable(int o);
+ 
+    void moveCurrentPieceDown();
+    void moveCurrentPieceLeft();
+    void moveCurrentPieceRight();
+ 
+    void rotateCurrentPieceLeft();
+    void rotateCurrentPieceRight();
+ 
+    void deleteLine(int y);
+    int deletePossibleLines();
+ 
+    void dropCurrentPiece();
+    BOOL isCurrentPieceFallen();
+	BOOL isGameOver();
+ 
+    void clear();
+ 

@@ -1,15 +1,12 @@
 /* piece.cpp */
 #include "piece.h"
  
-Piece::Piece()
+/*Piece newPiece(int k, int o)
 {
-    // Rien à faire
-}
- 
-Piece::Piece(int k, int o)
-{
-    kind = k;
-    orientation = o;
+	Piece p;
+    p.kind = k;
+    p.orientation = o;
+	return p;
 }
  
 Piece::Piece(const Piece &p)
@@ -69,4 +66,4 @@ void Piece::setPosY(int y)
 int Piece::getPosY()
 {
     return posY;
-}
+}*/

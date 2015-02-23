@@ -22,6 +22,11 @@
 
 #define COLLIDE_DIST 30000.0
 
+#define LARGEURCUBE 5
+#define LARGEUR (BOARD_WIDTH*LARGEURCUBE)
+#define HAUTEUR (BOARD_HEIGHT*LARGEURCUBE)
+
+
 /* Object Data */
 char            *model_name = "Data/object_dataTetris";
 ObjectData_T    *object;
@@ -43,6 +48,7 @@ char           *cparam_name    = "Data/camera_para.dat";
 ARParam         cparam;
 
 static int clock_start;
+static int clock_hop;
 static void   init(void);
 static void   cleanup(void);
 static void   keyEvent( unsigned char key, int x, int y);
@@ -60,14 +66,43 @@ static int changement = 0;
 static int changement2= 0;
 static int changement3= 0;
 static int tempsChute = 1000;
-static Board jeu;
+static int isDraw = 0;
 
 
 
+static int rand_a_b(int a, int b){
+    return rand()%(b-a) +a;
+}
 
+static float transformX(int x) {
+	return ((-LARGEUR/2) + (x * LARGEURCUBE) + (LARGEURCUBE/2));
+}
+
+static float transformY(int y) {
+	return (HAUTEUR -( y * LARGEURCUBE) + (LARGEURCUBE/2));
+}
+
+static void setOpenGLColor(int color) {
+	if(CYAN==color)
+		glColor3f(129/255,207/255,224/255);
+	else if(BLUE)
+		glColor3f(31/255,58/255,147/255);
+	else if(ORANGE)
+		glColor3f(244/255,179/255,80/255);
+	else if(YELLOW)
+		glColor3f(249/255,191/255,59/255);
+	else if(GREEN)
+		glColor3f(39/255,194/255,129/255);
+	else if(PURPLE)
+		glColor3f(145/255,61/255,136/255);
+	else if(RED)
+		glColor3f(214/255,69/255,65/255);
+
+}
 
 int main(int argc, char **argv)
 {
+	//Piece p1;
 	//initialize applications
 	glutInit(&argc, argv);
     init();
@@ -75,9 +110,15 @@ int main(int argc, char **argv)
 	arVideoCapStart();
 
 	clock_start=GetTickCount();
+	clock_hop=GetTickCount();
+	
+	/*p1.kind = 2;//= Piece(rand_a_b(0,7),rand_a_b(0,4));
+	p1.orientation = 0;
+	newPiece(p1);*/
 
 	//start the main event loop
     argMainLoop( NULL, keyEvent, mainLoop );
+	srand(time(NULL));
 
 	return 0;
 }
@@ -95,12 +136,27 @@ static void   keyEvent( unsigned char key, int x, int y)
 
 static void drawTetris()
 {
-	glPushMatrix();
-		glTranslatef(translateX, 0.0, translateDown);
-		glRotatef(rotationPlus,0,0,1.0);
-		glutSolidCube(20);
-	glPopMatrix();
+	int i=0,y=0;
+	for(i=0;i<BOARD_HEIGHT;i++)
+	{
+		for(y=0;y<BOARD_WIDTH;y++)
+		{
+			//printf("[%d]",jeu.area[y][i]);
+			if(jeu.area[y][i]!=FREE && jeu.area[y][i]!=GHOST)
+			{
+				glPushMatrix();
+					glTranslatef(transformX(y),0 , transformY(i));
+					glRotatef(rotationPlus,0,0,1.0);
+					setOpenGLColor(jeu.area[y][i]);
+					glutSolidCube(LARGEURCUBE);
+				glPopMatrix();
+			}
+		}
+		//printf("\n");
+	}
 }
+
+
 
 /* main loop */
 static void mainLoop(void)
@@ -110,16 +166,36 @@ static void mainLoop(void)
     int             marker_num;
     int             i,j,k;
 	clock_t time_c=(double)(GetTickCount()- clock_start);
+	clock_t time_cc=(double)(GetTickCount()- clock_hop);
 
 	areClose=0;
 
 	if(time_c>tempsChute && translateDown>15)
 	{
-		translateDown -= 20;
 		clock_start=GetTickCount();
-		drawTetris();
+		/*if(time_cc>5000)
+		{
+			Piece p1;
+			p1.kind = rand_a_b(0,7);//= Piece(rand_a_b(0,7),rand_a_b(0,4));
+			p1.orientation = rand_a_b(0,4);
+			newPiece(p1);
+			clock_hop=GetTickCount();
+		}*/
+		//jeu.area[5][19]=CYAN;
+
+		if(isCurrentPieceFallen()==1)
+		{
+			Piece p1;
+			p1.kind = rand_a_b(0,7);//= Piece(rand_a_b(0,7),rand_a_b(0,4));
+			p1.orientation = rand_a_b(0,4);
+			newPiece(p1);
+			printf("jedescendsplus\n");
+		}
+		else
+		{
+			moveCurrentPieceDown();
+		}
 	}
-	
 
     /* grab a video frame */
     if( (dataPtr = (ARUint8 *)arVideoGetImage()) == NULL ) {
@@ -240,6 +316,8 @@ static void cleanup(void)
     argCleanup();
 }
 
+
+
 /* draw the the AR objects */
 static int draw( ObjectData_T *object, int objectnum )
 {
@@ -255,18 +333,18 @@ static int draw( ObjectData_T *object, int objectnum )
 
 	if(object[2].visible == 0 && changement==1)
 	{
-		translateX+=20;
+		moveCurrentPieceRight();
 		changement=0;
 	}
 	if(object[3].visible == 0 && changement2==1)
 	{
-		translateX-=20;
+		moveCurrentPieceLeft();
 		changement2=0;
 	}
-	if(object[1].visible == 0 && translateDown > 15 && changement3==1)
+	if(object[1].visible == 0 &&  changement3==1)
 	{
 		tempsChute=100;
-		translateDown-=20;
+		dropCurrentPiece();
 	}
 	if(object[1].visible)
 	{
@@ -362,7 +440,7 @@ static int  draw_object( int obj_id, double gl_para[16])
 	
 	if(obj_id == 0  )
 	{	
-		drawTetris();
+		drawTetris(); 
 	}
 	else
 	{	
