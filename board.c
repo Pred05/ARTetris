@@ -276,23 +276,20 @@ void deleteLine(int y)
 
     for(j = y; j > 0; --j)
     {
-		
         for(i = 0; i < BOARD_WIDTH; ++i)
             jeu.area[i][j] = jeu.area[i][j-1];
     }
- 
     drawPiece(jeu.currentPiece);
 }
  
 int deletePossibleLines()
 {
     int nbLinesDeleted = 0;
- 
 	int j = 0;
+	int i = 0;
+
     for(j = 0; j < BOARD_HEIGHT; ++j)
     {
-        int i = 0;
- 
         for(i=0; i < BOARD_WIDTH && jeu.area[i][j] != FREE; ++i);
  
         if(i == BOARD_WIDTH)

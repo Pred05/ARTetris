@@ -9,7 +9,7 @@
 
 #define BOARD_H
 #define BOARD_HEIGHT 20
-#define BOARD_WIDTH 10
+#define BOARD_WIDTH 12
  
 #define ORIGIN_X 5
 #define ORIGIN_Y 1

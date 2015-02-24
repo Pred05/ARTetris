@@ -22,7 +22,7 @@
 
 #define COLLIDE_DIST 30000.0
 
-#define LARGEURCUBE 5
+#define LARGEURCUBE 10
 #define LARGEUR (BOARD_WIDTH*LARGEURCUBE)
 #define HAUTEUR (BOARD_HEIGHT*LARGEURCUBE)
 
@@ -67,6 +67,7 @@ static int changement2= 0;
 static int changement3= 0;
 static int tempsChute = 1000;
 static int isDraw = 0;
+static int score=0;
 
 
 
@@ -79,24 +80,24 @@ static float transformX(int x) {
 }
 
 static float transformY(int y) {
-	return (HAUTEUR -( y * LARGEURCUBE) + (LARGEURCUBE/2));
+	return (HAUTEUR -( y * LARGEURCUBE) );
 }
 
 static void setOpenGLColor(int color) {
 	if(CYAN==color)
-		glColor3f(129/255,207/255,224/255);
-	else if(BLUE)
-		glColor3f(31/255,58/255,147/255);
-	else if(ORANGE)
-		glColor3f(244/255,179/255,80/255);
-	else if(YELLOW)
-		glColor3f(249/255,191/255,59/255);
-	else if(GREEN)
-		glColor3f(39/255,194/255,129/255);
-	else if(PURPLE)
-		glColor3f(145/255,61/255,136/255);
-	else if(RED)
-		glColor3f(214/255,69/255,65/255);
+		glColor3f(129.0/255.0,207.0/255.0,224.0/255.0);
+	else if(BLUE==color)
+		glColor3f(31.0/255,58.0/255,147.0/255);
+	else if(ORANGE==color)
+		glColor3f(244.0/255,179.0/255,80.0/255);
+	else if(YELLOW==color)
+		glColor3f(249.0/255,191.0/255,59.0/255);
+	else if(GREEN==color)
+		glColor3f(39.0/255,194.0/255,129.0/255);
+	else if(PURPLE==color)
+		glColor3f(145.0/255,61.0/255,136.0/255);
+	else if(RED==color)
+		glColor3f(214.0/255,69.0/255,65.0/255);
 
 }
 
@@ -145,9 +146,9 @@ static void drawTetris()
 			if(jeu.area[y][i]!=FREE && jeu.area[y][i]!=GHOST)
 			{
 				glPushMatrix();
+					setOpenGLColor(jeu.area[y][i]);
 					glTranslatef(transformX(y),0 , transformY(i));
 					glRotatef(rotationPlus,0,0,1.0);
-					setOpenGLColor(jeu.area[y][i]);
 					glutSolidCube(LARGEURCUBE);
 				glPopMatrix();
 			}
@@ -170,9 +171,10 @@ static void mainLoop(void)
 
 	areClose=0;
 
-	if(time_c>tempsChute && translateDown>15)
+	if(time_c>tempsChute)
 	{
 		clock_start=GetTickCount();
+		
 		/*if(time_cc>5000)
 		{
 			Piece p1;
@@ -186,10 +188,18 @@ static void mainLoop(void)
 		if(isCurrentPieceFallen()==1)
 		{
 			Piece p1;
+			if (isGameOver()==1)
+			{
+				//afficher le score au milieu et game Over !
+				printf("game over mec!");
+				return;
+			}
+			
 			p1.kind = rand_a_b(0,7);//= Piece(rand_a_b(0,7),rand_a_b(0,4));
 			p1.orientation = rand_a_b(0,4);
 			newPiece(p1);
-			printf("jedescendsplus\n");
+			score += deletePossibleLines();
+			printf("Mon score : %d\n",score);
 		}
 		else
 		{
@@ -231,7 +241,7 @@ static void mainLoop(void)
 				/* you've found a pattern */
 				//printf("Found pattern: %d ",patt_id);
 				glColor3f( 0.0, 1.0, 0.0 );
-				argDrawSquare(marker_info[j].vertex,0,0);
+				//argDrawSquare(marker_info[j].vertex,0,0);
 
 				if( k == -1 ) k = j;
 		        else /* make sure you have the best pattern (highest confidence factor) */
@@ -272,7 +282,7 @@ static void mainLoop(void)
 
 	
 	arVideoCapNext();
-
+	printf("ici");
 	/* draw the AR graphics */
     draw( object, objectnum );
 
@@ -343,12 +353,11 @@ static int draw( ObjectData_T *object, int objectnum )
 	}
 	if(object[1].visible == 0 &&  changement3==1)
 	{
-		tempsChute=100;
 		dropCurrentPiece();
+		changement3=0;
 	}
 	if(object[1].visible)
 	{
-		tempsChute=1000;
 		changement3=1;
 	}
 	if(object[2].visible && changement==0)
@@ -382,11 +391,10 @@ static int draw( ObjectData_T *object, int objectnum )
 static void drawFleche(int obj_id)
 {
 	glPushMatrix();
-		glColor3f(0.0,1.0,0.0);
-		glTranslatef(0,0,10);	
-		glRectf(-40,40,40,-40);
-		glMaterialfv(GL_FRONT, GL_SPECULAR, green);
-		glMaterialfv(GL_FRONT, GL_AMBIENT, green);
+		glTranslatef(0,0,1);
+		glColor3f(0.2,0.2,0.2);	
+		glRectf(-55,55,55,-55);
+		glColor3f(1.0,1.0,1.0);
 		glBegin(GL_TRIANGLES);
 			if(obj_id==1)
 			{
@@ -410,14 +418,93 @@ static void drawFleche(int obj_id)
 	glPopMatrix();
 }
 
+static void drawMur() {
+	glPushMatrix();
+		glColor3f(1,1,1);
+		glRectf(-50,50,50,-50);
+		glColor3f(0.2,0.2,0.2);
+		glTranslatef(0,0,1);
+		//dessous
+		glBegin(GL_QUADS);
+			glVertex3f((-LARGEUR/2.0)-5.0,0,0);
+			glVertex3f((-LARGEUR/2.0)-5.0,-10,0);
+			glVertex3f((LARGEUR/2.0)+5.0,-10,0);
+			glVertex3f((LARGEUR/2.0)+5.0,0,0);
+		glEnd();
+		//cote gauche
+		glBegin(GL_QUADS);
+			glVertex3f((-LARGEUR/2.0)-5.0,0,0);
+			glVertex3f((-LARGEUR/2.0)-5.0,0,HAUTEUR);
+			glVertex3f((-LARGEUR/2.0)-2.0,0,HAUTEUR);
+			glVertex3f((-LARGEUR/2.0)-2.0,0,0);
+		glEnd();
+		glBegin(GL_QUADS);
+			glVertex3f((-LARGEUR/2.0)-5.0,-10,0);
+			glVertex3f((-LARGEUR/2.0)-5.0,-10,HAUTEUR);
+			glVertex3f((-LARGEUR/2.0)-2.0,-10,HAUTEUR);
+			glVertex3f((-LARGEUR/2.0)-2.0,-10,0);
+		glEnd();
+		glBegin(GL_QUADS);
+			glVertex3f((-LARGEUR/2.0)-5.0,0,0);
+			glVertex3f((-LARGEUR/2.0)-5.0,-10,0);
+			glVertex3f((-LARGEUR/2.0)-5.0,-10,HAUTEUR);
+			glVertex3f((-LARGEUR/2.0)-5.0,0,HAUTEUR);
+		glEnd();
+		glBegin(GL_QUADS);
+			glVertex3f((-LARGEUR/2.0)-2.0,0,0);
+			glVertex3f((-LARGEUR/2.0)-2.0,-10,0);
+			glVertex3f((-LARGEUR/2.0)-2.0,-10,HAUTEUR);
+			glVertex3f((-LARGEUR/2.0)-2.0,0,HAUTEUR);
+		glEnd();
+		glBegin(GL_QUADS);
+			glVertex3f((-LARGEUR/2.0)-2.0,0,HAUTEUR);
+			glVertex3f((-LARGEUR/2.0)-5.0,0,HAUTEUR);
+			glVertex3f((-LARGEUR/2.0)-5.0,-10,HAUTEUR);
+			glVertex3f((-LARGEUR/2.0)-2.0,-10,HAUTEUR);
+		glEnd();
+
+		//Cote droit
+		glBegin(GL_QUADS);
+			glVertex3f((LARGEUR/2.0)+5.0,0,0);
+			glVertex3f((LARGEUR/2.0)+5.0,0,HAUTEUR);
+			glVertex3f((LARGEUR/2.0)+2.0,0,HAUTEUR);
+			glVertex3f((LARGEUR/2.0)+2.0,0,0);
+		glEnd();
+		glBegin(GL_QUADS);
+			glVertex3f((LARGEUR/2.0)+5.0,-10,0);
+			glVertex3f((LARGEUR/2.0)+5.0,-10,HAUTEUR);
+			glVertex3f((LARGEUR/2.0)+2.0,-10,HAUTEUR);
+			glVertex3f((LARGEUR/2.0)+2.0,-10,0);
+		glEnd();
+		glBegin(GL_QUADS);
+			glVertex3f((LARGEUR/2.0)+5.0,0,0);
+			glVertex3f((LARGEUR/2.0)+5.0,-10,0);
+			glVertex3f((LARGEUR/2.0)+5.0,-10,HAUTEUR);
+			glVertex3f((LARGEUR/2.0)+5.0,0,HAUTEUR);
+		glEnd();
+		glBegin(GL_QUADS);
+			glVertex3f((LARGEUR/2.0)+2.0,0,0);
+			glVertex3f((LARGEUR/2.0)+2.0,-10,0);
+			glVertex3f((LARGEUR/2.0)+2.0,-10,HAUTEUR);
+			glVertex3f((LARGEUR/2.0)+2.0,0,HAUTEUR);
+		glEnd();
+		glBegin(GL_QUADS);
+			glVertex3f((LARGEUR/2.0)+2.0,0,HAUTEUR);
+			glVertex3f((LARGEUR/2.0)+5.0,0,HAUTEUR);
+			glVertex3f((LARGEUR/2.0)+5.0,-10,HAUTEUR);
+			glVertex3f((LARGEUR/2.0)+2.0,-10,HAUTEUR);
+		glEnd();
+	glPopMatrix();
+}
+
 /* draw the user object */
 static int  draw_object( int obj_id, double gl_para[16])
 {
 
     GLfloat   mat_flash_shiny[] = {50.0};
-    GLfloat   light_position[]  = {100.0,-200.0,200.0,0.0};
-    GLfloat   ambi[]            = {0.1, 0.1, 0.1, 0.1};
-    GLfloat   lightZeroColor[]  = {0.9, 0.9, 0.9, 0.1};
+    GLfloat   light_position[]  = {0.0,-200.0,200.0,0.0};
+    GLfloat   ambi[]            = {1, 1, 1, 1};
+    GLfloat   lightZeroColor[]  = {1, 1, 1, 1};
 	int orientation = object[0].trans[2][2];
     argDrawMode3D();
     argDraw3dCamera( 0, 0 );
@@ -428,29 +515,31 @@ static int  draw_object( int obj_id, double gl_para[16])
  	/* set the material */
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
+	glEnable(GL_COLOR_MATERIAL);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambi);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightZeroColor);
 
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_flash_shiny);	
+    //glMaterialfv(GL_FRONT, GL_SHININESS, mat_flash_shiny);	
 
-	glMaterialfv(GL_FRONT, GL_SPECULAR, red);
-	glMaterialfv(GL_FRONT, GL_AMBIENT, red);
+	//glMaterialfv(GL_FRONT, GL_SPECULAR, red);
+	//glMaterialfv(GL_FRONT, GL_AMBIENT, red);
 
 	
 	if(obj_id == 0  )
 	{	
 		drawTetris(); 
+		drawMur();
 	}
 	else
 	{	
 		drawFleche(obj_id);
 	}
 
-
+	
 	glLoadIdentity();
-	glMaterialfv(GL_FRONT, GL_SPECULAR, red);
-	glMaterialfv(GL_FRONT, GL_AMBIENT, red);
+	//glMaterialfv(GL_FRONT, GL_SPECULAR, red);
+	//glMaterialfv(GL_FRONT, GL_AMBIENT, red);
 
     argDrawMode2D();
 
