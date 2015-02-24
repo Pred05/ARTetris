@@ -21,6 +21,7 @@ typedef struct Board {
 	Piece currentPiece;
     Piece ghostPiece;
 	int area[BOARD_WIDTH][BOARD_HEIGHT];
+	BOOL enCours;
 } Board;
 
 Board jeu;

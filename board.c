@@ -316,7 +316,7 @@ BOOL isCurrentPieceFallen()
     int x = jeu.currentPiece.posX;
     int y = jeu.currentPiece.posY;
  
-    if(isCurrentPieceMovable(x, y+1))
+	if(isCurrentPieceMovable(x, y+1))
         return FALSE;
  
     return TRUE;

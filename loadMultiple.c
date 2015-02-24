@@ -20,7 +20,7 @@
 #include "object.h"
 #include "board.h"
 
-#define COLLIDE_DIST 30000.0
+#define COLLIDE_DIST 15000.0f
 
 #define LARGEURCUBE 10
 #define LARGEUR (BOARD_WIDTH*LARGEURCUBE)
@@ -65,9 +65,11 @@ static int translateX = 10;
 static int changement = 0;
 static int changement2= 0;
 static int changement3= 0;
-static int tempsChute = 1000;
+static int tempsChute = 1500;
+static int tempsRotation = 750;
 static int isDraw = 0;
 static int score=0;
+static BOOL pause = TRUE;
 
 
 
@@ -113,14 +115,15 @@ int main(int argc, char **argv)
 	clock_start=GetTickCount();
 	clock_hop=GetTickCount();
 	
-	/*p1.kind = 2;//= Piece(rand_a_b(0,7),rand_a_b(0,4));
-	p1.orientation = 0;
-	newPiece(p1);*/
+	srand(time(NULL));
+	jeu.currentPiece.kind = rand_a_b(0,7);//= Piece(rand_a_b(0,7),rand_a_b(0,4));
+	jeu.currentPiece.orientation = rand_a_b(0,4);
+	jeu.currentPiece.posX=ORIGIN_X;
+	jeu.currentPiece.posY=ORIGIN_Y;
 
 	//start the main event loop
     argMainLoop( NULL, keyEvent, mainLoop );
-	srand(time(NULL));
-
+	
 	return 0;
 }
 
@@ -168,44 +171,8 @@ static void mainLoop(void)
     int             i,j,k;
 	clock_t time_c=(double)(GetTickCount()- clock_start);
 	clock_t time_cc=(double)(GetTickCount()- clock_hop);
-
-	areClose=0;
-
-	if(time_c>tempsChute)
-	{
-		clock_start=GetTickCount();
-		
-		/*if(time_cc>5000)
-		{
-			Piece p1;
-			p1.kind = rand_a_b(0,7);//= Piece(rand_a_b(0,7),rand_a_b(0,4));
-			p1.orientation = rand_a_b(0,4);
-			newPiece(p1);
-			clock_hop=GetTickCount();
-		}*/
-		//jeu.area[5][19]=CYAN;
-
-		if(isCurrentPieceFallen()==1)
-		{
-			Piece p1;
-			if (isGameOver()==1)
-			{
-				//afficher le score au milieu et game Over !
-				printf("game over mec!");
-				return;
-			}
-			
-			p1.kind = rand_a_b(0,7);//= Piece(rand_a_b(0,7),rand_a_b(0,4));
-			p1.orientation = rand_a_b(0,4);
-			newPiece(p1);
-			score += deletePossibleLines();
-			printf("Mon score : %d\n",score);
-		}
-		else
-		{
-			moveCurrentPieceDown();
-		}
-	}
+	
+	
 
     /* grab a video frame */
     if( (dataPtr = (ARUint8 *)arVideoGetImage()) == NULL ) {
@@ -241,7 +208,7 @@ static void mainLoop(void)
 				/* you've found a pattern */
 				//printf("Found pattern: %d ",patt_id);
 				glColor3f( 0.0, 1.0, 0.0 );
-				//argDrawSquare(marker_info[j].vertex,0,0);
+				argDrawSquare(marker_info[j].vertex,0,0);
 
 				if( k == -1 ) k = j;
 		        else /* make sure you have the best pattern (highest confidence factor) */
@@ -267,22 +234,64 @@ static void mainLoop(void)
         object[i].visible = 1;
 	}
 
-	if(object[0].visible && object[1].visible)
-	{
-		float T[3],dist;
-		T[0]=object[0].trans[0][3]-object[1].trans[0][3];
-		T[1]=object[0].trans[1][3]-object[1].trans[1][3];
-		T[2]=object[0].trans[2][3]-object[1].trans[2][3];
-		dist = sqrt(T[0]*T[0]+T[1]*T[1]+T[2]*T[2]);
-	
-		if(dist<200)
-			areClose = 1;
+	/// PROOGGG
+
+	if( object[0].visible && object[1].visible && object[2].visible && object[3].visible) {
+		pause=FALSE;
 	}
-	
+	if( object[0].visible==0 && object[1].visible==0 && object[2].visible==0 && object[3].visible==0) {
+		pause=TRUE;
+	}
+
+	if(pause==0)
+	{
+		if(time_c>tempsChute)
+		{
+			clock_start=GetTickCount();
+
+			if(isCurrentPieceFallen()==1)
+			{
+				Piece p1;
+				if (isGameOver()==1)
+				{
+					//afficher le score au milieu et game Over !
+					printf("game over mec!");
+					return;
+				}
+			
+				p1.kind = rand_a_b(0,7);//= Piece(rand_a_b(0,7),rand_a_b(0,4));
+				p1.orientation = rand_a_b(0,4);
+				printf("kind %d , orientation %d ", p1.kind,p1.orientation);
+				newPiece(p1);
+				score += deletePossibleLines();
+				printf("Mon score : %d\n",score);
+			}
+			else
+			{
+				moveCurrentPieceDown();
+			}
+		}
+
+
+		if(time_cc>tempsRotation)
+		{
+			clock_hop=GetTickCount();
+			/*check for object collisions between markers*/
+			if(object[2].visible && object[4].visible){
+				if(checkCollisions(object[2],object[4])){	
+					rotateCurrentPieceLeft();
+				}
+			}
+			if(object[3].visible && object[4].visible){
+				if(checkCollisions(object[3],object[4])){
+					rotateCurrentPieceRight();
+				}
+			}
+		}
+	}
 
 	
 	arVideoCapNext();
-	printf("ici");
 	/* draw the AR graphics */
     draw( object, objectnum );
 
@@ -422,6 +431,19 @@ static void drawMur() {
 	glPushMatrix();
 		glColor3f(1,1,1);
 		glRectf(-50,50,50,-50);
+
+		glColor3f(1,0,0);
+		glLineWidth(2.0);
+		//limite
+		glBegin(GL_LINES);
+			glVertex3f(-(LARGEUR/2.0),0,HAUTEUR-(LARGEURCUBE/2));
+			glVertex3f(LARGEUR/2.0,0,HAUTEUR-(LARGEURCUBE/2));
+		glEnd();
+		glBegin(GL_LINES);
+			glVertex3f(-(LARGEUR/2.0),-10,HAUTEUR-(LARGEURCUBE/2));
+			glVertex3f(LARGEUR/2.0,-10,HAUTEUR-(LARGEURCUBE/2));
+		glEnd();
+
 		glColor3f(0.2,0.2,0.2);
 		glTranslatef(0,0,1);
 		//dessous
@@ -526,12 +548,12 @@ static int  draw_object( int obj_id, double gl_para[16])
 	//glMaterialfv(GL_FRONT, GL_AMBIENT, red);
 
 	
-	if(obj_id == 0  )
+	if(obj_id == 0)
 	{	
 		drawTetris(); 
 		drawMur();
 	}
-	else
+	else if(obj_id != 4)
 	{	
 		drawFleche(obj_id);
 	}
@@ -544,4 +566,32 @@ static int  draw_object( int obj_id, double gl_para[16])
     argDrawMode2D();
 
     return 0;
+}
+
+
+/* check collision between two markers */
+static int checkCollisions( ObjectData_T object0, ObjectData_T object1)
+{
+	float x1,y1,z1;
+	float x2,y2,z2;
+	float dist;
+
+	x1 = object0.trans[0][3];
+	y1 = object0.trans[1][3];
+	z1 = object0.trans[2][3];
+
+	x2 = object1.trans[0][3];
+	y2 = object1.trans[1][3];
+	z2 = object1.trans[2][3];
+
+	dist = (x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)+(z1-z2)*(z1-z2);
+
+	//printf("Dist = %3.2f\n",COLLIDE_DIST);
+
+	if(dist < COLLIDE_DIST)
+	{
+		return 1;
+	}
+	else 
+		return 0;
 }
