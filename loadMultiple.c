@@ -70,6 +70,10 @@ static int tempsRotation = 750;
 static int isDraw = 0;
 static int score=0;
 static BOOL pause = TRUE;
+static char scoreTitre[5];
+static char scoreChar[4];
+static char gameOverChar[9];
+static BOOL isGameOverVar;
 
 
 
@@ -121,6 +125,13 @@ int main(int argc, char **argv)
 	jeu.currentPiece.posX=ORIGIN_X;
 	jeu.currentPiece.posY=ORIGIN_Y;
 
+	strcpy(scoreTitre,"Score");
+	strcpy(gameOverChar,"Game Over");
+	score = 100;
+	sprintf(scoreChar,"%d",score);
+
+	isGameOverVar = FALSE;
+
 	//start the main event loop
     argMainLoop( NULL, keyEvent, mainLoop );
 	
@@ -160,6 +171,35 @@ static void drawTetris()
 	}
 }
 
+static void drawGameOver() {
+	int l,lScore,i;
+
+	l = (int)strlen(gameOverChar);
+	lScore = (int)strlen(scoreChar);
+
+	glPushMatrix();
+		glLineWidth(3.0);
+		glTranslatef(-57,0.0,HAUTEUR/2);
+		glColor3f(0.0,0.0,0.0);
+		glPushMatrix();
+			glScalef(0.16,0.2,0.2);
+			glRotatef(90,1,0,0);
+			for(i=0;i<l;i++)
+			{
+				glutStrokeCharacter(GLUT_STROKE_ROMAN,gameOverChar[i]);
+			}
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(35+20-lScore*5,0,-40);
+			glScalef(0.16,0.2,0.2);
+			glRotatef(90,1,0,0);
+			for(i=0;i<lScore;i++)
+			{
+				glutStrokeCharacter(GLUT_STROKE_ROMAN,scoreChar[i]);
+			}
+		glPopMatrix();
+	glPopMatrix();
+}
 
 
 /* main loop */
@@ -243,28 +283,29 @@ static void mainLoop(void)
 		pause=TRUE;
 	}
 
-	if(pause==0)
+	if(pause==0 && isGameOverVar!=1)
 	{
 		if(time_c>tempsChute)
 		{
 			clock_start=GetTickCount();
-
 			if(isCurrentPieceFallen()==1)
 			{
 				Piece p1;
-				if (isGameOver()==1)
-				{
-					//afficher le score au milieu et game Over !
-					printf("game over mec!");
+				if (isGameOver()==1) {
+					clear();
+					isGameOverVar = TRUE;
 					return;
 				}
-			
-				p1.kind = rand_a_b(0,7);//= Piece(rand_a_b(0,7),rand_a_b(0,4));
-				p1.orientation = rand_a_b(0,4);
-				printf("kind %d , orientation %d ", p1.kind,p1.orientation);
-				newPiece(p1);
-				score += deletePossibleLines();
-				printf("Mon score : %d\n",score);
+				else
+				{
+					p1.kind = rand_a_b(0,7);//= Piece(rand_a_b(0,7),rand_a_b(0,4));
+					p1.orientation = rand_a_b(0,4);
+					printf("kind %d , orientation %d ", p1.kind,p1.orientation);
+					newPiece(p1);
+					score += deletePossibleLines();
+					sprintf(scoreChar,"%d",score);
+					printf("Mon score : %d\n",score);
+				}
 			}
 			else
 			{
@@ -350,32 +391,35 @@ static int draw( ObjectData_T *object, int objectnum )
     glEnable(GL_LIGHTING);
 
 
-	if(object[2].visible == 0 && changement==1)
+	if(isGameOverVar!=1)
 	{
-		moveCurrentPieceRight();
-		changement=0;
-	}
-	if(object[3].visible == 0 && changement2==1)
-	{
-		moveCurrentPieceLeft();
-		changement2=0;
-	}
-	if(object[1].visible == 0 &&  changement3==1)
-	{
-		dropCurrentPiece();
-		changement3=0;
-	}
-	if(object[1].visible)
-	{
-		changement3=1;
-	}
-	if(object[2].visible && changement==0)
-	{
-		changement=1;
-	}
-	if(object[3].visible && changement2==0)
-	{
-		changement2=1;
+		if(object[2].visible == 0 && changement==1)
+		{
+			moveCurrentPieceRight();
+			changement=0;
+		}
+		if(object[3].visible == 0 && changement2==1)
+		{
+			moveCurrentPieceLeft();
+			changement2=0;
+		}
+		if(object[1].visible == 0 &&  changement3==1)
+		{
+			dropCurrentPiece();
+			changement3=0;
+		}
+		if(object[1].visible)
+		{
+			changement3=1;
+		}
+		if(object[2].visible && changement==0)
+		{
+			changement=1;
+		}
+		if(object[3].visible && changement2==0)
+		{
+			changement2=1;
+		}
 	}
 	
 
@@ -426,6 +470,36 @@ static void drawFleche(int obj_id)
 			glEnd();
 	glPopMatrix();
 }
+
+static void drawScore() {
+	int l,lTitre,i;
+
+	l = (int)strlen(scoreChar);
+	lTitre = (int)strlen(scoreTitre);
+	glPushMatrix();
+		glLineWidth(3.0);
+		glTranslatef((LARGEUR/2.0)+10.0,0.0,50.0);
+		glColor3f(0.0/255.0,0.0/255.0,0.0/255.0);
+		glPushMatrix();
+			glScalef(0.2,0.2,0.2);
+			glRotatef(45,1,0,0);
+			for(i=0;i<lTitre;i++)
+			{
+				glutStrokeCharacter(GLUT_STROKE_ROMAN,scoreTitre[i]);
+			}
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(0,0.0,-20.0);
+			glScalef(0.1,0.1,0.1);
+			glRotatef(45,1,0,0);
+			for(i=0;i<l;i++)
+			{
+				glutStrokeCharacter(GLUT_STROKE_ROMAN,scoreChar[i]);
+			}
+		glPopMatrix();
+	glPopMatrix();
+}
+
 
 static void drawMur() {
 	glPushMatrix();
@@ -552,6 +626,11 @@ static int  draw_object( int obj_id, double gl_para[16])
 	{	
 		drawTetris(); 
 		drawMur();
+		drawScore();
+		if(isGameOverVar)
+		{
+			drawGameOver();
+		}
 	}
 	else if(obj_id != 4)
 	{	
